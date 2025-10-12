@@ -35,7 +35,7 @@ export default function BaristaLogin() {
 
   return (
     <div className="mx-auto max-w-screen-sm px-4 py-12">
-      <h1 className="text-2xl font-semibold mb-4">咖啡師登入</h1>
+      <h1 className="text-2xl font-semibold mb-4">訂單頁(同工專用) 登入</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
           <label className="block text-sm mb-1">密碼</label>
@@ -44,7 +44,7 @@ export default function BaristaLogin() {
             onChange={(e) => setCode(e.target.value)}
             type="password"
             className="w-full h-12 px-3 rounded-[var(--radius-md)] border border-border"
-            placeholder="輸入咖啡師密碼"
+            placeholder="輸入同工專用密碼"
           />
         </div>
         {error ? <p className="text-sm text-red-600">{error}</p> : null}

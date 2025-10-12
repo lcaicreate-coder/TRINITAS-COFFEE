@@ -142,7 +142,7 @@ export default function Barista() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-border">
         <div className="mx-auto max-w-screen-xl px-4 h-16 flex items-center justify-between">
-          <div className="text-xl font-semibold tracking-tight">咖啡師看板</div>
+          <div className="text-xl font-semibold tracking-tight">訂單頁(同工專用)</div>
           <div className="flex items-center gap-3">
             <form action="/api/barista/logout" method="post">
               <button

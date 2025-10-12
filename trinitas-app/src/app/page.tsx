@@ -7,7 +7,7 @@ export default function Home() {
         <div className="mx-auto max-w-screen-md px-4 h-16 flex items-center justify-between">
           <div className="text-xl font-semibold tracking-tight">Trinitas 三一光隅</div>
           <Link href="/barista" className="text-sm text-[color:var(--primary)] underline">
-            咖啡師看板
+            訂單頁(同工專用)
           </Link>
         </div>
       </header>
