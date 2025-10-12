@@ -144,6 +144,13 @@ export default function Barista() {
         <div className="mx-auto max-w-screen-xl px-4 h-16 flex items-center justify-between">
           <div className="text-xl font-semibold tracking-tight">咖啡師看板</div>
           <div className="flex items-center gap-3">
+            <form action="/api/barista/logout" method="post">
+              <button
+                className="h-10 px-3 rounded-[var(--radius-sm)] border border-border"
+              >
+                登出
+              </button>
+            </form>
             <button
               onClick={() => setMuted((m) => !m)}
               className="h-10 px-3 rounded-[var(--radius-sm)] border border-border"
