@@ -2,8 +2,13 @@ import { NextRequest } from "next/server";
 import { createOrder, serializeOrders } from "@/lib/db";
 import { getMenuItem } from "@/lib/menu";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const runtime = "edge";
+
 export async function GET() {
-  return Response.json({ orders: serializeOrders() });
+  const orders = await serializeOrders();
+  return Response.json({ orders });
 }
 
 type PostBody = { displayName?: string; note?: string; menuItemId?: string } | null;
@@ -21,6 +26,6 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: "無效的飲品" }), { status: 400 });
   }
 
-  const order = createOrder({ displayName, note, menuItemId });
+  const order = await createOrder({ displayName, note, menuItemId });
   return new Response(JSON.stringify({ order }), { status: 201, headers: { "content-type": "application/json" } });
 }
