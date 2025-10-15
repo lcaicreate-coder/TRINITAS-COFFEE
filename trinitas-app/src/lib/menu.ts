@@ -34,14 +34,6 @@ export const MENU: MenuItem[] = [
     image: "/images/menu/cappuccino.jpg"
   },
   { 
-    id: "iced_cappuccino", 
-    nameZh: "冰卡布奇諾", 
-    nameEn: "Iced Cappuccino", 
-    category: "Iced Coffee", 
-    available: false,
-    image: "/images/menu/iced-cappuccino.jpg"
-  },
-  { 
     id: "latte", 
     nameZh: "拿鐵咖啡", 
     nameEn: "Latte", 

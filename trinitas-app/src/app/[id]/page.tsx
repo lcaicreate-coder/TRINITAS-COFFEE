@@ -26,7 +26,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
       <div className="mx-auto max-w-screen-sm px-4 py-12">
         <p className="mb-4">找不到此飲品。</p>
         <Link href="/" className="text-[color:var(--primary)] underline">
-          返回菜單
+          返回主頁
         </Link>
       </div>
     );
@@ -49,7 +49,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
           </p>
           <Button asChild size="lg" className="w-full">
             <Link href="/">
-              返回菜單
+              返回主頁
             </Link>
           </Button>
         </Card>
@@ -96,7 +96,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
           >
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              返回菜單
+              返回主頁
             </Link>
           </Button>
           
