@@ -67,16 +67,21 @@ export default function Barista() {
         .find(row => row.startsWith('barista_auth='))
         ?.split('=')[1];
       
+      console.log('🔍 Checking auth cookie:', authCookie);
+      
       if (authCookie === '1') {
+        console.log('✅ User authenticated');
         setIsAuthenticated(true);
       } else {
+        console.log('❌ User not authenticated, redirecting...');
         setIsAuthenticated(false);
-        router.push('/barista/login');
+        // Use window.location for immediate redirect
+        window.location.href = '/barista/login';
       }
     };
 
     checkAuth();
-  }, [router]);
+  }, []);
 
   // Show loading while checking authentication
   if (isAuthenticated === null) {
@@ -90,9 +95,16 @@ export default function Barista() {
     );
   }
 
-  // Redirect if not authenticated
+  // Show redirecting message if not authenticated
   if (isAuthenticated === false) {
-    return null;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">重定向到登入頁面...</p>
+        </div>
+      </div>
+    );
   }
 
   // Beep when new order arrives
