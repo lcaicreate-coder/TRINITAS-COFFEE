@@ -88,7 +88,14 @@ function BaristaLoginForm() {
 
 export default function BaristaLogin() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">載入中...</p>
+        </div>
+      </div>
+    }>
       <BaristaLoginForm />
     </Suspense>
   );
