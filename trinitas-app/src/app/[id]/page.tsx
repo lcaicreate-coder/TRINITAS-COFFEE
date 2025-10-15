@@ -136,13 +136,20 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
               <p className="text-muted-foreground text-lg">{item.nameEn}</p>
             </div>
 
-            <form onSubmit={onSubmit} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name">您的稱呼 *</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      // 收回鍵盤 - 移除焦點
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
                   placeholder="請輸入您的稱呼"
                   required
                   className="bg-input-background"
@@ -185,6 +192,13 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
                   id="note"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      // 收回鍵盤 - 移除焦點
+                      (e.target as HTMLTextAreaElement).blur();
+                    }
+                  }}
                   placeholder="請輸入訂單備註（選填）"
                   rows={4}
                   className="bg-input-background resize-none"
@@ -199,7 +213,8 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
               )}
 
               <Button
-                type="submit"
+                type="button"
+                onClick={onSubmit}
                 className="w-full"
                 size="lg"
                 disabled={!canSubmit}
