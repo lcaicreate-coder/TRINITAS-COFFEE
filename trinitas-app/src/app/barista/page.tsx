@@ -62,12 +62,17 @@ export default function Barista() {
   // Check authentication on component mount
   useEffect(() => {
     const checkAuth = () => {
+      // Get all cookies
+      const allCookies = document.cookie;
+      console.log('🍪 All cookies:', allCookies);
+      
       const authCookie = document.cookie
         .split('; ')
         .find(row => row.startsWith('barista_auth='))
         ?.split('=')[1];
       
       console.log('🔍 Checking auth cookie:', authCookie);
+      console.log('🔍 Current URL:', window.location.href);
       
       if (authCookie === '1') {
         console.log('✅ User authenticated');
@@ -76,11 +81,14 @@ export default function Barista() {
         console.log('❌ User not authenticated, redirecting...');
         setIsAuthenticated(false);
         // Use window.location for immediate redirect
-        window.location.href = '/barista/login';
+        setTimeout(() => {
+          window.location.href = '/barista/login';
+        }, 1000); // Add small delay to see the message
       }
     };
 
-    checkAuth();
+    // Add small delay to ensure component is mounted
+    setTimeout(checkAuth, 100);
   }, []);
 
   // Show loading while checking authentication
