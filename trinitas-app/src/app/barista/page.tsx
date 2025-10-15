@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -51,10 +52,48 @@ function formatSince(ts: number) {
 }
 
 export default function Barista() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const orders = useOrdersPolling(2000);
   const [muted, setMuted] = useState<boolean>(false);
   const [mounted, setMounted] = useState(false);
   const knownIds = useRef<Set<string>>(new Set());
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const checkAuth = () => {
+      const authCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('barista_auth='))
+        ?.split('=')[1];
+      
+      if (authCookie === '1') {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        router.push('/barista/login');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  // Show loading while checking authentication
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">檢查認證中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect if not authenticated
+  if (isAuthenticated === false) {
+    return null;
+  }
 
   // Beep when new order arrives
   useEffect(() => {
