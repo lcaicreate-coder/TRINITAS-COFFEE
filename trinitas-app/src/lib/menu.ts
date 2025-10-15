@@ -27,7 +27,7 @@ export const MENU: MenuItem[] = [
   },
   { 
     id: "cappuccino", 
-    nameZh: "卡布奇諾", 
+    nameZh: "泡沫咖啡", 
     nameEn: "Cappuccino", 
     category: "Milk Coffee", 
     available: true,
@@ -38,7 +38,7 @@ export const MENU: MenuItem[] = [
     nameZh: "冰卡布奇諾", 
     nameEn: "Iced Cappuccino", 
     category: "Iced Coffee", 
-    available: true,
+    available: false,
     image: "/images/menu/iced-cappuccino.jpg"
   },
   { 

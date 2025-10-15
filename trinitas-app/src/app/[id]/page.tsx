@@ -36,8 +36,12 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <Card className="w-full max-w-md p-8 text-center border-border bg-card">
-          <div className="mx-auto mb-6 h-20 w-20 rounded-full bg-primary/10 grid place-items-center text-primary text-3xl">
-            ✓
+          <div className="mx-auto mb-6 h-20 w-20 flex items-center justify-center">
+            <img
+              src="/images/brand/logo.jpg"
+              alt="Trinitas Logo"
+              className="h-16 w-16 object-contain"
+            />
           </div>
           <h1 className="text-2xl font-semibold mb-3 text-foreground">訂單已送出</h1>
           <p className="text-muted-foreground mb-8 leading-relaxed">
@@ -200,7 +204,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
                 size="lg"
                 disabled={!canSubmit}
               >
-                {submitting ? "送出中…" : "確認訂購"}
+                {submitting ? "送出中…" : "送出訂單"}
               </Button>
             </form>
           </div>
