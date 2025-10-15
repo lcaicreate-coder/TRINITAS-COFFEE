@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { LogOut, Bell, BellOff, Clock, User, StickyNote } from "lucide-react";
+import { LogOut, Bell, BellOff, User, StickyNote } from "lucide-react";
 import Link from "next/link";
 import { MENU } from "@/lib/menu";
 
@@ -28,7 +27,6 @@ function formatTime(createdAt: number) {
 }
 
 export default function Barista() {
-  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [muted, setMuted] = useState<boolean>(false);
@@ -122,7 +120,7 @@ export default function Barista() {
       });
       if (res.ok) {
         setOrders(prev => prev.map(o => 
-          o.id === orderId ? { ...o, status: status as any } : o
+          o.id === orderId ? { ...o, status: status as Order['status'] } : o
         ));
       }
     } catch (error) {
@@ -148,7 +146,7 @@ export default function Barista() {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center justify-center">
                 <img
                   src="/images/brand/logo.jpg"

@@ -1,17 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function BaristaLogin() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -87,7 +86,7 @@ export default function BaristaLogin() {
 
         <div className="mt-6 text-center">
           <Button variant="link" asChild>
-            <a href="/">返回主頁</a>
+            <Link href="/">返回主頁</Link>
           </Button>
         </div>
       </Card>
