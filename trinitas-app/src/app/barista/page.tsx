@@ -31,37 +31,27 @@ export default function Barista() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [muted, setMuted] = useState<boolean>(false);
 
-  // Check authentication on component mount
+  // Simple authentication check
   useEffect(() => {
-    console.log("🔒 Barista page loaded, checking authentication...");
+    console.log("🔒 Checking authentication...");
     
-    const checkAuth = () => {
-      const allCookies = document.cookie;
-      console.log("🍪 All cookies:", allCookies);
-      
-      const authCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('barista_auth='))
-        ?.split('=')[1];
-      
-      console.log("🔍 Auth cookie value:", authCookie);
-      
-      if (authCookie === '1') {
-        console.log("✅ User is authenticated");
-        setIsAuthenticated(true);
-      } else {
-        console.log("❌ User not authenticated, redirecting to login...");
-        setIsAuthenticated(false);
-        // Immediate redirect
-        window.location.href = '/barista/login';
-      }
-    };
-
-    // Check auth immediately
-    checkAuth();
+    // Check if we have the auth cookie
+    const hasAuth = document.cookie.includes('barista_auth=1');
+    console.log("🍪 Has auth cookie:", hasAuth);
+    console.log("🍪 All cookies:", document.cookie);
+    
+    if (hasAuth) {
+      console.log("✅ Authenticated");
+      setIsAuthenticated(true);
+    } else {
+      console.log("❌ Not authenticated, redirecting...");
+      setIsAuthenticated(false);
+      // Immediate redirect
+      window.location.replace('/barista/login');
+    }
   }, []);
 
-  // Fetch orders
+  // Fetch orders when authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -92,7 +82,7 @@ export default function Barista() {
     );
   }
 
-  // Show redirecting message if not authenticated
+  // Show redirecting if not authenticated
   if (isAuthenticated === false) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -146,7 +136,7 @@ export default function Barista() {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center justify-center">
                 <img
                   src="/images/brand/logo.jpg"

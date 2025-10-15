@@ -18,41 +18,21 @@ export default function BaristaLogin() {
     setError(null);
 
     try {
-      console.log("🔐 Attempting login with code:", code);
+      console.log("🔐 Attempting login...");
       
       const res = await fetch("/api/barista/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
+        credentials: "include" // Important for cookies
       });
 
-      console.log("🔐 Login response status:", res.status);
+      console.log("🔐 Response status:", res.status);
 
       if (res.ok) {
-        console.log("✅ Login successful, checking cookies...");
-        
-        // Wait a moment for cookie to be set
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Check if cookie was set
-        const allCookies = document.cookie;
-        console.log("🍪 All cookies after login:", allCookies);
-        
-        const authCookie = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('barista_auth='))
-          ?.split('=')[1];
-        
-        console.log("🔍 Auth cookie after login:", authCookie);
-        
-        if (authCookie === '1') {
-          console.log("✅ Cookie confirmed, redirecting to barista page...");
-          window.location.href = "/barista";
-        } else {
-          console.log("❌ Cookie not found, retrying redirect...");
-          // Force redirect anyway
-          window.location.href = "/barista";
-        }
+        console.log("✅ Login successful, redirecting...");
+        // Force redirect
+        window.location.href = "/barista";
       } else {
         const data = await res.json();
         console.log("❌ Login failed:", data);
