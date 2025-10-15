@@ -2,32 +2,37 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export const config = {
-  matcher: ["/barista", "/barista/:path*"],
+  matcher: [
+    "/barista",
+    "/barista/:path*"
+  ],
 };
 
-export const runtime = "edge";
-
 export function middleware(req: NextRequest) {
-  console.log("Middleware triggered for:", req.nextUrl.pathname);
+  const { pathname } = req.nextUrl;
+  
+  // Add debug headers
+  const response = NextResponse.next();
+  response.headers.set("x-middleware-path", pathname);
   
   // Skip login page to avoid infinite redirect
-  if (req.nextUrl.pathname.startsWith("/barista/login")) {
-    console.log("Skipping login page");
-    return NextResponse.next();
+  if (pathname === "/barista/login") {
+    response.headers.set("x-middleware-action", "skip-login");
+    return response;
   }
 
   // Check for authentication cookie
-  const cookie = req.cookies.get("barista_auth")?.value;
-  console.log("Auth cookie value:", cookie);
+  const authCookie = req.cookies.get("barista_auth");
   
-  if (cookie === "1") {
-    console.log("User authenticated, allowing access");
-    return NextResponse.next();
+  if (authCookie?.value === "1") {
+    response.headers.set("x-middleware-action", "authenticated");
+    return response;
   }
   
-  console.log("User not authenticated, redirecting to login");
-  const url = new URL("/barista/login", req.url);
-  url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
-  return NextResponse.redirect(url);
+  // Redirect to login page
+  response.headers.set("x-middleware-action", "redirect-to-login");
+  const loginUrl = new URL("/barista/login", req.url);
+  loginUrl.searchParams.set("next", pathname);
+  return NextResponse.redirect(loginUrl);
 }
 
