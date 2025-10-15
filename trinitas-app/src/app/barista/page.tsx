@@ -16,6 +16,7 @@ type DetailedOrder = {
   status: "pending" | "in_progress" | "ready" | "done";
   createdAt: number;
   note?: string;
+  items: { menuItemId: string; qty: number; addOns?: string[] }[];
   itemsDetailed: { menuItemId: string; nameZh: string; nameEn: string; qty: number }[];
 };
 

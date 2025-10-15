@@ -12,7 +12,7 @@ export function middleware(req: NextRequest) {
   }
 
   // Use default passcode if not configured
-  const passcode = process.env.BARISTA_PASSCODE || "4778337";
+  // const passcode = process.env.BARISTA_PASSCODE || "4778337";
 
   const cookie = req.cookies.get("barista_auth")?.value;
   if (cookie === "1") {

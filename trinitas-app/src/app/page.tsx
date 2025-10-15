@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+// import { useState } from "react";
 import { MENU } from "@/lib/menu";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 
 export default function Home() {
-  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  // const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
 
   const products = MENU.map(item => ({
     id: item.id,

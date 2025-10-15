@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
     const key = `ratelimit:orders:${ip}`;
-    const now = Date.now();
+    // const now = Date.now();
     const windowMs = 30_000;
     const limit = 5;
     // increment counter with TTL

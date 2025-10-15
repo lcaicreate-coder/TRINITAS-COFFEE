@@ -59,11 +59,11 @@ async function listOrdersFromSupabase(): Promise<Order[]> {
   return [];
 }
 
-async function createOrderInSupabase(params: { displayName: string; note?: string; menuItemId: string; addOns?: string[] }): Promise<Order> {
+async function createOrderInSupabase(_params: { displayName: string; note?: string; menuItemId: string; addOns?: string[] }): Promise<Order> {
   throw new Error('Supabase disabled');
 }
 
-async function updateOrderStatusInSupabase(orderId: string, next: OrderStatus): Promise<Order | undefined> {
+async function updateOrderStatusInSupabase(_orderId: string, _next: OrderStatus): Promise<Order | undefined> {
   return undefined;
 }
 

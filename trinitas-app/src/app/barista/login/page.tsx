@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 
-export default function BaristaLogin() {
+function BaristaLoginForm() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -83,6 +83,14 @@ export default function BaristaLogin() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function BaristaLogin() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BaristaLoginForm />
+    </Suspense>
   );
 }
 
