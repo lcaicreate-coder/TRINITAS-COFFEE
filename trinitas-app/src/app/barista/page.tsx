@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { LogOut, Bell, BellOff, User, StickyNote } from "lucide-react";
+import { LogOut, Bell, BellOff, User, StickyNote, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { MENU } from "@/lib/menu";
 
@@ -118,6 +118,28 @@ export default function Barista() {
     }
   };
 
+  const deleteOrder = async (orderId: string) => {
+    if (!confirm("確定要刪除這個訂單嗎？")) {
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/orders/${orderId}/delete`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        setOrders(prev => prev.filter(o => o.id !== orderId));
+      } else {
+        const errorText = await res.text();
+        console.error("Failed to delete order:", errorText);
+        alert("刪除訂單失敗");
+      }
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      alert("刪除訂單失敗");
+    }
+  };
+
   const clearAllOrders = async () => {
     if (confirm('確定要清除所有訂單嗎？此操作無法復原。')) {
       try {
@@ -136,7 +158,7 @@ export default function Barista() {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center justify-center">
                 <img
                   src="/images/brand/logo.jpg"
@@ -240,13 +262,23 @@ export default function Barista() {
                         )}
                       </div>
 
-                      <Button
-                        onClick={() => updateStatus(order.id, "in_progress")}
-                        className="w-full"
-                        size="sm"
-                      >
-                        開始製作
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => updateStatus(order.id, "in_progress")}
+                          className="flex-1"
+                          size="sm"
+                        >
+                          開始製作
+                        </Button>
+                        <Button
+                          onClick={() => deleteOrder(order.id)}
+                          variant="outline"
+                          size="sm"
+                          className="px-3"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))
@@ -293,14 +325,24 @@ export default function Barista() {
                         )}
                       </div>
 
-                      <Button
-                        onClick={() => updateStatus(order.id, "done")}
-                        className="w-full"
-                        size="sm"
-                        variant="outline"
-                      >
-                        完成製作
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => updateStatus(order.id, "done")}
+                          className="flex-1"
+                          size="sm"
+                          variant="outline"
+                        >
+                          完成製作
+                        </Button>
+                        <Button
+                          onClick={() => deleteOrder(order.id)}
+                          variant="outline"
+                          size="sm"
+                          className="px-3"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))
@@ -347,10 +389,18 @@ export default function Barista() {
                         )}
                       </div>
 
-                      <div className="text-center">
+                      <div className="flex items-center justify-between">
                         <Badge variant="default" className="bg-green-500">
                           ✓ 已完成
                         </Badge>
+                        <Button
+                          onClick={() => deleteOrder(order.id)}
+                          variant="outline"
+                          size="sm"
+                          className="px-3"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </Card>

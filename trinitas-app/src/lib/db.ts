@@ -177,6 +177,36 @@ export async function updateOrderStatus(orderId: string, next: OrderStatus): Pro
   return memoryOrders[idx];
 }
 
+export async function deleteOrder(orderId: string): Promise<boolean> {
+  if (isSupabaseEnabled()) {
+    // Delete from Supabase (when implemented)
+    return false;
+  }
+  if (isKvEnabled()) {
+    // Delete from KV
+    await kv.del(ORDER_KEY(orderId));
+    await kv.zrem(ORDERS_ZSET_KEY, orderId);
+    return true;
+  }
+  
+  // Load from file if memory is empty
+  if (memoryOrders.length === 0) {
+    const fileOrders = await loadOrdersFromFile();
+    memoryOrders.push(...fileOrders);
+  }
+  
+  const idx = memoryOrders.findIndex((o) => o.id === orderId);
+  if (idx === -1) {
+    console.log("Order not found for deletion:", orderId);
+    return false;
+  }
+  
+  memoryOrders.splice(idx, 1);
+  await saveOrdersToFile(memoryOrders);
+  console.log("Order deleted:", orderId);
+  return true;
+}
+
 export async function clearAllOrders(): Promise<void> {
   if (isSupabaseEnabled()) {
     // Clear from Supabase (when implemented)
