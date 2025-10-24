@@ -187,7 +187,7 @@ async function listOrdersFromSupabase(): Promise<Order[]> {
       note: order.note,
       status: order.status as OrderStatus,
       createdAt: new Date(order.created_at).getTime(),
-      items: order.order_items.map((item: any) => ({
+      items: order.order_items.map((item: { menu_item_id: string; quantity: number; add_ons?: string[] }) => ({
         menuItemId: item.menu_item_id,
         qty: item.quantity,
         addOns: item.add_ons || []
@@ -305,7 +305,7 @@ async function updateOrderStatusInSupabase(orderId: string, next: OrderStatus): 
       note: data.note,
       status: data.status as OrderStatus,
       createdAt: new Date(data.created_at).getTime(),
-      items: data.order_items.map((item: any) => ({
+      items: data.order_items.map((item: { menu_item_id: string; quantity: number; add_ons?: string[] }) => ({
         menuItemId: item.menu_item_id,
         qty: item.quantity,
         addOns: item.add_ons || []
