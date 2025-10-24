@@ -232,7 +232,7 @@ export default function Barista() {
                             </h3>
                             {order.orderNumber && (
                               <Badge variant="secondary" className="text-xs">
-                                No. #{order.orderNumber.toString().padStart(3, '0')}
+                                No. {order.orderNumber}
                               </Badge>
                             )}
                           </div>
@@ -315,7 +315,7 @@ export default function Barista() {
                             </h3>
                             {order.orderNumber && (
                               <Badge variant="secondary" className="text-xs">
-                                No. #{order.orderNumber.toString().padStart(3, '0')}
+                                No. {order.orderNumber}
                               </Badge>
                             )}
                           </div>
@@ -386,7 +386,7 @@ export default function Barista() {
                             </h3>
                             {order.orderNumber && (
                               <Badge variant="secondary" className="text-xs">
-                                No. #{order.orderNumber.toString().padStart(3, '0')}
+                                No. {order.orderNumber}
                               </Badge>
                             )}
                           </div>
