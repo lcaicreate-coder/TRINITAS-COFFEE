@@ -41,7 +41,43 @@ async function saveOrdersToFile(orders: Order[]): Promise<void> {
 }
 
 // Order counter management
-async function loadOrderCounter(): Promise<{ counter: number; lastResetDate: string }> {
+const COUNTER_KEY = "order_counter";
+
+async function loadOrderCounterFromKv(): Promise<{ counter: number; lastResetDate: string }> {
+  try {
+    const data = await kv.get<{ counter: number; lastResetDate: string }>(COUNTER_KEY);
+    if (!data) {
+      const today = new Date().toDateString();
+      console.log("No counter in KV, creating new counter for:", today);
+      return { counter: 0, lastResetDate: today };
+    }
+    
+    // Check if we need to reset the counter (new day)
+    const today = new Date().toDateString();
+    if (data.lastResetDate !== today) {
+      console.log("New day detected, resetting counter from", data.lastResetDate, "to", today);
+      return { counter: 0, lastResetDate: today };
+    }
+    
+    console.log("Loaded counter from KV:", data);
+    return data;
+  } catch (error) {
+    console.error("Error loading counter from KV:", error);
+    const today = new Date().toDateString();
+    return { counter: 0, lastResetDate: today };
+  }
+}
+
+async function saveOrderCounterToKv(counter: { counter: number; lastResetDate: string }): Promise<void> {
+  try {
+    await kv.set(COUNTER_KEY, counter);
+    console.log("Saved counter to KV:", counter);
+  } catch (error) {
+    console.error("Failed to save order counter to KV:", error);
+  }
+}
+
+async function loadOrderCounterFromFile(): Promise<{ counter: number; lastResetDate: string }> {
   try {
     await ensureDataDir();
     if (!existsSync(ORDER_COUNTER_FILE)) {
@@ -59,21 +95,37 @@ async function loadOrderCounter(): Promise<{ counter: number; lastResetDate: str
       return { counter: 0, lastResetDate: today };
     }
     
-    console.log("Loaded counter:", counter);
+    console.log("Loaded counter from file:", counter);
     return counter;
   } catch (error) {
-    console.error("Error loading counter:", error);
+    console.error("Error loading counter from file:", error);
     const today = new Date().toDateString();
     return { counter: 0, lastResetDate: today };
   }
 }
 
-async function saveOrderCounter(counter: { counter: number; lastResetDate: string }): Promise<void> {
+async function saveOrderCounterToFile(counter: { counter: number; lastResetDate: string }): Promise<void> {
   try {
     await ensureDataDir();
     await writeFile(ORDER_COUNTER_FILE, JSON.stringify(counter, null, 2));
+    console.log("Saved counter to file:", counter);
   } catch (error) {
-    console.error("Failed to save order counter:", error);
+    console.error("Failed to save order counter to file:", error);
+  }
+}
+
+async function loadOrderCounter(): Promise<{ counter: number; lastResetDate: string }> {
+  if (isKvEnabled()) {
+    return await loadOrderCounterFromKv();
+  }
+  return await loadOrderCounterFromFile();
+}
+
+async function saveOrderCounter(counter: { counter: number; lastResetDate: string }): Promise<void> {
+  if (isKvEnabled()) {
+    await saveOrderCounterToKv(counter);
+  } else {
+    await saveOrderCounterToFile(counter);
   }
 }
 
@@ -130,8 +182,12 @@ async function listOrdersFromKv(): Promise<Order[]> {
 }
 
 async function createOrderInKv(params: { displayName: string; note?: string; menuItemId: string; addOns?: string[] }): Promise<Order> {
+  // Get next order number
+  const orderNumber = await getNextOrderNumber();
+  
   const order: Order = {
     id: generateId(),
+    orderNumber: orderNumber,
     displayName: params.displayName,
     note: params.note?.trim() ? params.note.trim() : undefined,
     status: "pending",
