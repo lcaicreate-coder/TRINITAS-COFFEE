@@ -147,6 +147,10 @@ function isKvEnabled(): boolean {
 }
 
 function isSupabaseEnabled(): boolean {
+  // 在生產環境中，如果 Supabase 環境變量未設置，則禁用 Supabase
+  if (process.env.NODE_ENV === 'production') {
+    return isSupabaseAvailable() && Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  }
   return isSupabaseAvailable();
 }
 
@@ -466,9 +470,21 @@ async function updateOrderStatusInKv(orderId: string, next: OrderStatus): Promis
 
 // Public API with priority: Supabase > KV > File > Memory
 export async function listOrders(): Promise<Order[]> {
-  if (isSupabaseEnabled()) return listOrdersFromSupabase();
-  if (isKvEnabled()) return listOrdersFromKv();
+  console.log('listOrders: Checking database availability...');
+  console.log('Supabase enabled:', isSupabaseEnabled());
+  console.log('KV enabled:', isKvEnabled());
+  console.log('Environment:', process.env.NODE_ENV);
   
+  if (isSupabaseEnabled()) {
+    console.log('Using Supabase for listOrders');
+    return listOrdersFromSupabase();
+  }
+  if (isKvEnabled()) {
+    console.log('Using KV for listOrders');
+    return listOrdersFromKv();
+  }
+  
+  console.log('Using file/memory for listOrders');
   // Load from file if memory is empty (after restart)
   if (memoryOrders.length === 0) {
     const fileOrders = await loadOrdersFromFile();
@@ -484,33 +500,50 @@ export async function listOrders(): Promise<Order[]> {
 }
 
 export async function createOrder(params: { displayName: string; note?: string; menuItemId: string; addOns?: string[] }): Promise<Order> {
-  if (isSupabaseEnabled()) return createOrderInSupabase(params);
-  if (isKvEnabled()) return createOrderInKv(params);
+  console.log('createOrder: Checking database availability...');
+  console.log('Supabase enabled:', isSupabaseEnabled());
+  console.log('KV enabled:', isKvEnabled());
+  console.log('Environment:', process.env.NODE_ENV);
   
-  // Load existing orders if memory is empty
-  if (memoryOrders.length === 0) {
-    const fileOrders = await loadOrdersFromFile();
-    memoryOrders.push(...fileOrders);
+  try {
+    if (isSupabaseEnabled()) {
+      console.log('Using Supabase for createOrder');
+      return await createOrderInSupabase(params);
+    }
+    if (isKvEnabled()) {
+      console.log('Using KV for createOrder');
+      return await createOrderInKv(params);
+    }
+    
+    console.log('Using file/memory for createOrder');
+    // Load existing orders if memory is empty
+    if (memoryOrders.length === 0) {
+      const fileOrders = await loadOrdersFromFile();
+      memoryOrders.push(...fileOrders);
+    }
+    
+    // Get next order number
+    const orderNumber = await getNextOrderNumber();
+    
+    const order: Order = {
+      id: generateId(),
+      orderNumber: orderNumber,
+      displayName: params.displayName,
+      note: params.note?.trim() ? params.note.trim() : undefined,
+      status: "pending",
+      createdAt: Date.now(),
+      items: [{ menuItemId: params.menuItemId, qty: 1, addOns: params.addOns || [] }],
+    };
+    memoryOrders.unshift(order);
+    
+    // Save to file
+    await saveOrdersToFile(memoryOrders);
+    
+    return order;
+  } catch (error) {
+    console.error('Error in createOrder:', error);
+    throw error;
   }
-  
-  // Get next order number
-  const orderNumber = await getNextOrderNumber();
-  
-  const order: Order = {
-    id: generateId(),
-    orderNumber: orderNumber,
-    displayName: params.displayName,
-    note: params.note?.trim() ? params.note.trim() : undefined,
-    status: "pending",
-    createdAt: Date.now(),
-    items: [{ menuItemId: params.menuItemId, qty: 1, addOns: params.addOns || [] }],
-  };
-  memoryOrders.unshift(order);
-  
-  // Save to file
-  await saveOrdersToFile(memoryOrders);
-  
-  return order;
 }
 
 export async function updateOrderStatus(orderId: string, next: OrderStatus): Promise<Order | undefined> {
