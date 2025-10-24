@@ -48,7 +48,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
           {orderNumber && (
             <div className="mb-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
               <p className="text-primary font-semibold text-lg">
-                訂單編號: #{orderNumber.toString().padStart(3, '0')}
+                No. #{orderNumber.toString().padStart(3, '0')}
               </p>
             </div>
           )}
