@@ -12,6 +12,7 @@ import { MENU } from "@/lib/menu";
 
 type Order = {
   id: string;
+  orderNumber?: number;
   displayName: string;
   status: "pending" | "in_progress" | "ready" | "done";
   createdAt: number;
@@ -225,9 +226,16 @@ export default function Barista() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium">
-                            {MENU.find(m => m.id === order.items[0].menuItemId)?.nameZh || '未知商品'}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">
+                              {MENU.find(m => m.id === order.items[0].menuItemId)?.nameZh || '未知商品'}
+                            </h3>
+                            {order.orderNumber && (
+                              <Badge variant="secondary" className="text-xs">
+                                #{order.orderNumber.toString().padStart(3, '0')}
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {MENU.find(m => m.id === order.items[0].menuItemId)?.nameEn || ''}
                           </p>
@@ -301,9 +309,16 @@ export default function Barista() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium">
-                            {MENU.find(m => m.id === order.items[0].menuItemId)?.nameZh || '未知商品'}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">
+                              {MENU.find(m => m.id === order.items[0].menuItemId)?.nameZh || '未知商品'}
+                            </h3>
+                            {order.orderNumber && (
+                              <Badge variant="secondary" className="text-xs">
+                                #{order.orderNumber.toString().padStart(3, '0')}
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {MENU.find(m => m.id === order.items[0].menuItemId)?.nameEn || ''}
                           </p>
@@ -365,9 +380,16 @@ export default function Barista() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-medium">
-                            {MENU.find(m => m.id === order.items[0].menuItemId)?.nameZh || '未知商品'}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">
+                              {MENU.find(m => m.id === order.items[0].menuItemId)?.nameZh || '未知商品'}
+                            </h3>
+                            {order.orderNumber && (
+                              <Badge variant="secondary" className="text-xs">
+                                #{order.orderNumber.toString().padStart(3, '0')}
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {MENU.find(m => m.id === order.items[0].menuItemId)?.nameEn || ''}
                           </p>

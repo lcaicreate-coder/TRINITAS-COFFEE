@@ -20,6 +20,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<number | null>(null);
 
   if (!item) {
     return (
@@ -44,6 +45,13 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
             />
           </div>
           <h1 className="text-2xl font-semibold mb-3 text-foreground">訂單已送出</h1>
+          {orderNumber && (
+            <div className="mb-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+              <p className="text-primary font-semibold text-lg">
+                訂單編號: #{orderNumber.toString().padStart(3, '0')}
+              </p>
+            </div>
+          )}
           <p className="text-muted-foreground mb-8 leading-relaxed">
             請期待你的咖啡。如果你都享受 Trinitas 嘅體驗，歡迎奉獻支持。
           </p>
@@ -76,6 +84,13 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "送單失敗");
       }
+      
+      // Get order number from response
+      const data = await res.json();
+      if (data.order && data.order.orderNumber) {
+        setOrderNumber(data.order.orderNumber);
+      }
+      
       setSubmitted(true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "送單失敗";

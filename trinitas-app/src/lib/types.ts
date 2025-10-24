@@ -25,6 +25,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
+  orderNumber?: number; // 新增：訂單編號
   displayName: string;
   note?: string;
   status: OrderStatus;
