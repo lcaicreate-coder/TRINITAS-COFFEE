@@ -19,30 +19,30 @@ export type Database = {
       orders: {
         Row: {
           id: string
+          order_number: number | null
           display_name: string
           note: string | null
           status: string
-          created_at: number
-          menu_item_id: string
-          qty: number
+          created_at: string
+          updated_at: string | null
         }
         Insert: {
-          id: string
+          id?: string
+          order_number?: number | null
           display_name: string
           note?: string | null
           status?: string
-          created_at: number
-          menu_item_id: string
-          qty?: number
+          created_at?: string
+          updated_at?: string | null
         }
         Update: {
           id?: string
+          order_number?: number | null
           display_name?: string
           note?: string | null
           status?: string
-          created_at?: number
-          menu_item_id?: string
-          qty?: number
+          created_at?: string
+          updated_at?: string | null
         }
       }
     }
