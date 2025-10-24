@@ -8,6 +8,11 @@ export const supabase = supabaseUrl && supabaseKey && supabaseUrl.startsWith('ht
   ? createClient(supabaseUrl, supabaseKey)
   : null
 
+// 檢查 Supabase 是否可用
+export function isSupabaseAvailable(): boolean {
+  return supabase !== null
+}
+
 export type Database = {
   public: {
     Tables: {

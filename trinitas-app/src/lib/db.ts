@@ -4,7 +4,7 @@ import { kv } from "@vercel/kv";
 import { writeFile, readFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
-// import { supabase } from "./supabase";
+import { supabase, isSupabaseAvailable } from "./supabase";
 
 // In-memory fallback store
 const memoryOrders: Order[] = [];
@@ -147,22 +147,279 @@ function isKvEnabled(): boolean {
 }
 
 function isSupabaseEnabled(): boolean {
-  // Temporarily disabled until environment variables are properly set
-  return false;
-  // return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  return isSupabaseAvailable();
 }
 
-// Supabase functions (temporarily disabled)
+// Supabase functions
 async function listOrdersFromSupabase(): Promise<Order[]> {
-  return [];
+  if (!supabase) {
+    console.error('Supabase client not initialized');
+    return [];
+  }
+
+  try {
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        order_number,
+        display_name,
+        note,
+        status,
+        created_at,
+        order_items (
+          menu_item_id,
+          quantity,
+          add_ons
+        )
+      `)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching orders from Supabase:', error);
+      return [];
+    }
+
+    return orders.map(order => ({
+      id: order.id,
+      orderNumber: order.order_number,
+      displayName: order.display_name,
+      note: order.note,
+      status: order.status as OrderStatus,
+      createdAt: new Date(order.created_at).getTime(),
+      items: order.order_items.map((item: any) => ({
+        menuItemId: item.menu_item_id,
+        qty: item.quantity,
+        addOns: item.add_ons || []
+      }))
+    }));
+  } catch (error) {
+    console.error('Error in listOrdersFromSupabase:', error);
+    return [];
+  }
 }
 
-async function createOrderInSupabase(_params: { displayName: string; note?: string; menuItemId: string; addOns?: string[] }): Promise<Order> {
-  throw new Error('Supabase disabled');
+async function createOrderInSupabase(params: { displayName: string; note?: string; menuItemId: string; addOns?: string[] }): Promise<Order> {
+  if (!supabase) {
+    throw new Error('Supabase client not initialized');
+  }
+
+  try {
+    // 獲取下一個訂單編號
+    const orderNumber = await getNextOrderNumberFromSupabase();
+    
+    const orderId = generateId();
+    const now = new Date().toISOString();
+
+    // 創建訂單
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        id: orderId,
+        order_number: orderNumber,
+        display_name: params.displayName,
+        note: params.note?.trim() || null,
+        status: 'pending',
+        created_at: now
+      })
+      .select()
+      .single();
+
+    if (orderError) {
+      console.error('Error creating order in Supabase:', orderError);
+      throw new Error('Failed to create order');
+    }
+
+    // 創建訂單項目
+    const { error: itemError } = await supabase
+      .from('order_items')
+      .insert({
+        order_id: orderId,
+        menu_item_id: params.menuItemId,
+        quantity: 1,
+        add_ons: params.addOns || []
+      });
+
+    if (itemError) {
+      console.error('Error creating order item in Supabase:', itemError);
+      throw new Error('Failed to create order item');
+    }
+
+    return {
+      id: order.id,
+      orderNumber: order.order_number,
+      displayName: order.display_name,
+      note: order.note,
+      status: order.status as OrderStatus,
+      createdAt: new Date(order.created_at).getTime(),
+      items: [{
+        menuItemId: params.menuItemId,
+        qty: 1,
+        addOns: params.addOns || []
+      }]
+    };
+  } catch (error) {
+    console.error('Error in createOrderInSupabase:', error);
+    throw error;
+  }
 }
 
-async function updateOrderStatusInSupabase(_orderId: string, _next: OrderStatus): Promise<Order | undefined> {
-  return undefined;
+async function updateOrderStatusInSupabase(orderId: string, next: OrderStatus): Promise<Order | undefined> {
+  if (!supabase) {
+    console.error('Supabase client not initialized');
+    return undefined;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ 
+        status: next,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', orderId)
+      .select(`
+        id,
+        order_number,
+        display_name,
+        note,
+        status,
+        created_at,
+        order_items (
+          menu_item_id,
+          quantity,
+          add_ons
+        )
+      `)
+      .single();
+
+    if (error) {
+      console.error('Error updating order status in Supabase:', error);
+      return undefined;
+    }
+
+    return {
+      id: data.id,
+      orderNumber: data.order_number,
+      displayName: data.display_name,
+      note: data.note,
+      status: data.status as OrderStatus,
+      createdAt: new Date(data.created_at).getTime(),
+      items: data.order_items.map((item: any) => ({
+        menuItemId: item.menu_item_id,
+        qty: item.quantity,
+        addOns: item.add_ons || []
+      }))
+    };
+  } catch (error) {
+    console.error('Error in updateOrderStatusInSupabase:', error);
+    return undefined;
+  }
+}
+
+async function deleteOrderFromSupabase(orderId: string): Promise<boolean> {
+  if (!supabase) {
+    console.error('Supabase client not initialized');
+    return false;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', orderId);
+
+    if (error) {
+      console.error('Error deleting order from Supabase:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteOrderFromSupabase:', error);
+    return false;
+  }
+}
+
+async function clearAllOrdersFromSupabase(): Promise<void> {
+  if (!supabase) {
+    console.error('Supabase client not initialized');
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .neq('id', 'dummy'); // 刪除所有訂單
+
+    if (error) {
+      console.error('Error clearing orders from Supabase:', error);
+    }
+  } catch (error) {
+    console.error('Error in clearAllOrdersFromSupabase:', error);
+  }
+}
+
+async function getNextOrderNumberFromSupabase(): Promise<number> {
+  if (!supabase) {
+    throw new Error('Supabase client not initialized');
+  }
+
+  try {
+    const today = new Date().toDateString();
+    
+    // 獲取當前計數器
+    const { data: counter, error: fetchError } = await supabase
+      .from('order_counter')
+      .select('counter, last_reset_date')
+      .eq('id', 1)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows found
+      console.error('Error fetching counter from Supabase:', fetchError);
+      throw new Error('Failed to fetch counter');
+    }
+
+    let currentCounter = 0;
+    let lastResetDate = today;
+
+    if (counter) {
+      // 檢查是否需要重置（新的一天）
+      if (counter.last_reset_date !== today) {
+        console.log('New day detected, resetting counter from', counter.last_reset_date, 'to', today);
+        currentCounter = 0;
+        lastResetDate = today;
+      } else {
+        currentCounter = counter.counter;
+        lastResetDate = counter.last_reset_date;
+      }
+    }
+
+    // 增加計數器
+    const newCounter = currentCounter + 1;
+
+    // 更新計數器
+    const { error: updateError } = await supabase
+      .from('order_counter')
+      .upsert({
+        id: 1,
+        counter: newCounter,
+        last_reset_date: lastResetDate,
+        updated_at: new Date().toISOString()
+      });
+
+    if (updateError) {
+      console.error('Error updating counter in Supabase:', updateError);
+      throw new Error('Failed to update counter');
+    }
+
+    console.log('Generated order number from Supabase:', newCounter);
+    return newCounter;
+  } catch (error) {
+    console.error('Error in getNextOrderNumberFromSupabase:', error);
+    throw error;
+  }
 }
 
 const ORDERS_ZSET_KEY = "orders:createdAt";
@@ -285,8 +542,7 @@ export async function updateOrderStatus(orderId: string, next: OrderStatus): Pro
 
 export async function deleteOrder(orderId: string): Promise<boolean> {
   if (isSupabaseEnabled()) {
-    // Delete from Supabase (when implemented)
-    return false;
+    return await deleteOrderFromSupabase(orderId);
   }
   if (isKvEnabled()) {
     // Delete from KV (when implemented)
@@ -313,7 +569,7 @@ export async function deleteOrder(orderId: string): Promise<boolean> {
 
 export async function clearAllOrders(): Promise<void> {
   if (isSupabaseEnabled()) {
-    // Clear from Supabase (when implemented)
+    await clearAllOrdersFromSupabase();
     return;
   }
   if (isKvEnabled()) {
