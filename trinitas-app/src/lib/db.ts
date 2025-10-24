@@ -171,11 +171,7 @@ async function listOrdersFromSupabase(): Promise<Order[]> {
         note,
         status,
         created_at,
-        order_items (
-          menu_item_id,
-          quantity,
-          add_ons
-        )
+        items
       `)
       .order('created_at', { ascending: true });
 
@@ -190,12 +186,8 @@ async function listOrdersFromSupabase(): Promise<Order[]> {
       displayName: order.display_name,
       note: order.note,
       status: order.status as OrderStatus,
-      createdAt: new Date(order.created_at).getTime(),
-      items: order.order_items.map((item: { menu_item_id: string; quantity: number; add_ons?: string[] }) => ({
-        menuItemId: item.menu_item_id,
-        qty: item.quantity,
-        addOns: item.add_ons || []
-      }))
+      createdAt: order.created_at,
+      items: order.items || []
     }));
   } catch (error) {
     console.error('Error in listOrdersFromSupabase:', error);
@@ -213,9 +205,15 @@ async function createOrderInSupabase(params: { displayName: string; note?: strin
     const orderNumber = await getNextOrderNumberFromSupabase();
     
     const orderId = generateId();
-    const now = new Date().toISOString();
+    const now = Date.now(); // 使用時間戳（毫秒）
 
-    // 創建訂單
+    // 創建訂單（包含項目）
+    const orderItems = [{
+      menuItemId: params.menuItemId,
+      qty: 1,
+      addOns: params.addOns || []
+    }];
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -224,7 +222,8 @@ async function createOrderInSupabase(params: { displayName: string; note?: strin
         display_name: params.displayName,
         note: params.note?.trim() || null,
         status: 'pending',
-        created_at: now
+        created_at: now,
+        items: orderItems
       })
       .select()
       .single();
@@ -234,33 +233,14 @@ async function createOrderInSupabase(params: { displayName: string; note?: strin
       throw new Error('Failed to create order');
     }
 
-    // 創建訂單項目
-    const { error: itemError } = await supabase
-      .from('order_items')
-      .insert({
-        order_id: orderId,
-        menu_item_id: params.menuItemId,
-        quantity: 1,
-        add_ons: params.addOns || []
-      });
-
-    if (itemError) {
-      console.error('Error creating order item in Supabase:', itemError);
-      throw new Error('Failed to create order item');
-    }
-
     return {
       id: order.id,
       orderNumber: order.order_number,
       displayName: order.display_name,
       note: order.note,
       status: order.status as OrderStatus,
-      createdAt: new Date(order.created_at).getTime(),
-      items: [{
-        menuItemId: params.menuItemId,
-        qty: 1,
-        addOns: params.addOns || []
-      }]
+      createdAt: order.created_at,
+      items: orderItems
     };
   } catch (error) {
     console.error('Error in createOrderInSupabase:', error);
@@ -289,11 +269,7 @@ async function updateOrderStatusInSupabase(orderId: string, next: OrderStatus): 
         note,
         status,
         created_at,
-        order_items (
-          menu_item_id,
-          quantity,
-          add_ons
-        )
+        items
       `)
       .single();
 
@@ -308,12 +284,8 @@ async function updateOrderStatusInSupabase(orderId: string, next: OrderStatus): 
       displayName: data.display_name,
       note: data.note,
       status: data.status as OrderStatus,
-      createdAt: new Date(data.created_at).getTime(),
-      items: data.order_items.map((item: { menu_item_id: string; quantity: number; add_ons?: string[] }) => ({
-        menuItemId: item.menu_item_id,
-        qty: item.quantity,
-        addOns: item.add_ons || []
-      }))
+      createdAt: data.created_at,
+      items: data.items || []
     };
   } catch (error) {
     console.error('Error in updateOrderStatusInSupabase:', error);

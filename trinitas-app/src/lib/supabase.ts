@@ -23,8 +23,9 @@ export type Database = {
           display_name: string
           note: string | null
           status: string
-          created_at: string
+          created_at: number
           updated_at: string | null
+          items: any[]
         }
         Insert: {
           id?: string
@@ -32,8 +33,9 @@ export type Database = {
           display_name: string
           note?: string | null
           status?: string
-          created_at?: string
+          created_at?: number
           updated_at?: string | null
+          items?: any[]
         }
         Update: {
           id?: string
@@ -41,8 +43,9 @@ export type Database = {
           display_name?: string
           note?: string | null
           status?: string
-          created_at?: string
+          created_at?: number
           updated_at?: string | null
+          items?: any[]
         }
       }
     }
