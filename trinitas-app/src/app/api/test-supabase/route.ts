@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     if (!supabase) {
       return NextResponse.json({ 
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 測試基本連接
-    const { data: testData, error: testError } = await supabase
+    const { error: testError } = await supabase
       .from('orders')
       .select('count')
       .limit(1);
