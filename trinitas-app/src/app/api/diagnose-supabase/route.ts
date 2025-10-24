@@ -127,7 +127,13 @@ export async function GET() {
         .select()
         .single();
 
-      if (!orderError) {
+      if (orderError) {
+        results.tests.createOrder = {
+          success: false,
+          orderError: orderError.message,
+          code: orderError.code
+        };
+      } else {
         // 創建訂單項目
         const { error: itemError } = await supabase
           .from('order_items')
@@ -142,15 +148,9 @@ export async function GET() {
         await supabase.from('orders').delete().eq('id', testOrderId);
 
         results.tests.createOrder = {
-          success: !orderError && !itemError,
-          orderError: orderError?.message,
-          itemError: itemError?.message
-        };
-      } else {
-        results.tests.createOrder = {
-          success: false,
-          orderError: orderError.message,
-          code: orderError.code
+          success: !itemError,
+          orderError: undefined,
+          itemError: itemError?.message || undefined
         };
       }
     } catch (e) {
