@@ -46,6 +46,7 @@ async function loadOrderCounter(): Promise<{ counter: number; lastResetDate: str
     await ensureDataDir();
     if (!existsSync(ORDER_COUNTER_FILE)) {
       const today = new Date().toDateString();
+      console.log("No counter file found, creating new counter for:", today);
       return { counter: 0, lastResetDate: today };
     }
     const data = await readFile(ORDER_COUNTER_FILE, "utf-8");
@@ -54,11 +55,14 @@ async function loadOrderCounter(): Promise<{ counter: number; lastResetDate: str
     // Check if we need to reset the counter (new day)
     const today = new Date().toDateString();
     if (counter.lastResetDate !== today) {
+      console.log("New day detected, resetting counter from", counter.lastResetDate, "to", today);
       return { counter: 0, lastResetDate: today };
     }
     
+    console.log("Loaded counter:", counter);
     return counter;
-  } catch {
+  } catch (error) {
+    console.error("Error loading counter:", error);
     const today = new Date().toDateString();
     return { counter: 0, lastResetDate: today };
   }
@@ -77,6 +81,7 @@ async function getNextOrderNumber(): Promise<number> {
   const counter = await loadOrderCounter();
   counter.counter += 1;
   await saveOrderCounter(counter);
+  console.log("Generated order number:", counter.counter);
   return counter.counter;
 }
 
